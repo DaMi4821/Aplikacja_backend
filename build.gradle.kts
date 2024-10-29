@@ -1,8 +1,8 @@
-val kotlin_version: String by project
-val logback_version: String by project
+val ktor_version = "2.0.0"
+val logback_version = "1.2.11"
 
 plugins {
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "1.9.10"
     id("io.ktor.plugin") version "3.0.0"
 }
 
@@ -21,25 +21,37 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-call-logging-jvm")
-    implementation("io.ktor:ktor-server-default-headers-jvm")
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-server-call-logging-jvm:2.0.0")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:2.0.0")
-    implementation("io.ktor:ktor-serialization-gson-jvm:2.0.0")
+    // Ktor dependencies
+    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-default-headers-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
+    implementation("io.ktor:ktor-serialization-gson-jvm:$ktor_version")
+    implementation("ch.qos.logback:logback-classic:1.3.0-alpha10")
+    
 
-    // Postgress
+    // Database dependencies
     implementation("org.postgresql:postgresql:42.7.2") // PostgreSQL JDBC driver
     implementation("com.zaxxer:HikariCP:5.0.0") // HikariCP for connection pooling
     implementation("org.jetbrains.exposed:exposed-core:0.41.1") // Exposed ORM core
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1") // Exposed DAO support
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1") // Exposed JDBC support
 
-    // Testowanie
-    testImplementation("io.ktor:ktor-server-test-host-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    // Test dependencies
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.10") // Bezpośrednie określenie wersji Kotlin
 }
 
+// Ustawienia kompatybilności Javy bez użycia toolchainów
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
+// Ustawienie jvmTarget na 17 dla Kotlina
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
