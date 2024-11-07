@@ -1,87 +1,71 @@
 @file:JvmName("Fitness")
 
-
-import com.example.repository.*
-import io.ktor.server.application.install
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.defaultheaders.*
+import com.example.repository.UserRepository
+import com.example.repository.initDatabase
+import io.ktor.http.*
 import io.ktor.serialization.gson.*
-import io.ktor.server.request.path
-import io.ktor.server.request.receive
-import io.ktor.server.routing.*
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import io.ktor.server.plugins.calllogging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.slf4j.event.Level
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
-import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.Database
-import com.typesafe.config.ConfigFactory
-import io.ktor.http.*
-
 fun main() {
-
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, port = 8080) {
         initDatabase()
+
+        install(CORS) {
+            allowHost("localhost:3000") // Zezwala na połączenia z frontendu działającego na porcie 3000
+            allowMethod(HttpMethod.Options) // Zezwala na zapytania wstępne OPTIONS
+            allowMethod(HttpMethod.Post) // Zezwala na metodę POST
+            allowHeader(HttpHeaders.ContentType) // Zezwala na nagłówek Content-Type
+        }
+
         install(ContentNegotiation) {
-            gson {
-                setPrettyPrinting()
+            gson { setPrettyPrinting() }
+        }
+
+        install(CallLogging) { level = Level.INFO }
+
+        install(StatusPages) {
+            status(HttpStatusCode.BadRequest) { call, status ->
+                call.respondText("Błędne dane", status = status)
+            }
+            status(HttpStatusCode.InternalServerError) { call, status ->
+                call.respondText("Błąd serwera", status = status)
             }
         }
-        routing() {
-            get("/cars") {
-                log.info("Próbuję pobrać listę samochodów z bazy danych...")
-                val car = getAllCars()
-                log.info("Pobrano samochody: $car")
-                call.respond(car)
-            }
 
-            post("/cars") {
-                val carRequest = call.receive<Map<String, String>>()
-                val name = carRequest["name"]
-                if (name != null) {
-                    log.info("Dodawanie nowego samochodu: $name")
-                    val newCar = addCar(name)
-                    call.respond(newCar)
-                } else {
-                    call.respondText("Brak nazwy samochodu", status = HttpStatusCode.BadRequest)
-                }
-            }
-
-            delete("/cars/{id}") {
-                val id = call.parameters["id"]?.toIntOrNull()
-                if (id != null) {
-                    log.info("Usuwanie samochodu o ID: $id")
-                    val success = deleteCar(id)
-                    if (success) {
-                        call.respondText("Samochód usunięty", status = HttpStatusCode.OK)
+        routing {
+            // Endpoint rejestracyjny
+            post("/api/register") {
+                try {
+                    val user = call.receive<UserRequest>()
+                    if (UserRepository.isEmailOrUsernameTaken(user.email, user.username)) {
+                        call.respond(HttpStatusCode.BadRequest, "Podany email lub nazwa użytkownika są już zajęte.")
                     } else {
-                        call.respondText("Samochód o podanym ID nie istnieje", status = HttpStatusCode.NotFound)
+                        UserRepository.addUser(user.email, user.username, user.password)
+                        call.respond(HttpStatusCode.Created, "Użytkownik został pomyślnie utworzony! Możesz się teraz zalogować.")
                     }
-                } else {
-                    call.respondText("Nieprawidłowe ID", status = HttpStatusCode.BadRequest)
+                } catch (e: Exception) {
+                    call.application.log.error("Błąd rejestracji użytkownika: ${e.message}")
+                    call.respond(HttpStatusCode.InternalServerError, "Błąd podczas przetwarzania rejestracji.")
                 }
             }
 
-            route("/") {
-                get {
-                    call.respondText("Welcome to the Ktor application!")
-                }
-                get("/1") {
-                    call.respondText("Abcde")
-                }
+            // Endpoint testowy
+            get("/") {
+                call.respondText("Welcome to the Ktor application!")
             }
-
         }
     }.start(wait = true)
 }
 
-
-
-
-
-
-
+// Klasa danych do odbierania danych rejestracyjnych
+data class UserRequest(val email: String, val username: String, val password: String)

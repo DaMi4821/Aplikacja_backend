@@ -1,4 +1,4 @@
-val ktor_version = "2.0.0"
+val ktor_version = "2.3.0"
 val logback_version = "1.2.11"
 
 plugins {
@@ -26,14 +26,16 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-default-headers-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-status-pages-jvm:$ktor_version") // Zależność dla StatusPages
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
     implementation("io.ktor:ktor-serialization-gson-jvm:$ktor_version")
     implementation("ch.qos.logback:logback-classic:1.3.0-alpha10")
-    
+
 
     // Database dependencies
     implementation("org.postgresql:postgresql:42.7.2") // PostgreSQL JDBC driver
-    implementation("com.zaxxer:HikariCP:5.0.0") // HikariCP for connection pooling
+    implementation("com.zaxxer:HikariCP:5.0.0") // HikariCP for connection
     implementation("org.jetbrains.exposed:exposed-core:0.41.1") // Exposed ORM core
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1") // Exposed DAO support
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1") // Exposed JDBC support
