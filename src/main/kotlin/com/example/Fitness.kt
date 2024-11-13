@@ -2,7 +2,9 @@
 
 import com.example.repository.UserRepository
 import com.example.repository.initDatabase
+import com.example.routing.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -15,6 +17,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.slf4j.event.Level
+import java.io.File
 
 fun main() {
     embeddedServer(Netty, port = 8080) {
@@ -24,6 +27,7 @@ fun main() {
             allowHost("localhost:3000") // Zezwala na połączenia z frontendu działającego na porcie 3000
             allowMethod(HttpMethod.Options) // Zezwala na zapytania wstępne OPTIONS
             allowMethod(HttpMethod.Post) // Zezwala na metodę POST
+            allowMethod(HttpMethod.Get) // Zezwala na metodę GET
             allowHeader(HttpHeaders.ContentType) // Zezwala na nagłówek Content-Type
         }
 
@@ -43,6 +47,10 @@ fun main() {
         }
 
         routing {
+            addFileRoute()
+            getFileRoute()
+            viewFileRoute()
+
             // Endpoint rejestracyjny
             post("/api/register") {
                 try {
@@ -62,6 +70,18 @@ fun main() {
             // Endpoint testowy
             get("/") {
                 call.respondText("Welcome to the Ktor application!")
+            }
+
+            // Endpoint do pobierania plików
+            get("/api/files/{filename}") {
+                val filename = call.parameters["filename"]
+                val file = File("uploads/$filename")
+
+                if (file.exists()) {
+                    call.respondFile(file)
+                } else {
+                    call.respond(HttpStatusCode.NotFound, "Plik nie znaleziony.")
+                }
             }
         }
     }.start(wait = true)
