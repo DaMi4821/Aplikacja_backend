@@ -1,1 +1,1 @@
-rootProject.name = "ktorBE"
+rootProject.name = "Aplikacja"
