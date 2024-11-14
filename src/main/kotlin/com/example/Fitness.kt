@@ -39,7 +39,7 @@ fun main() {
 
         install(StatusPages) {
             status(HttpStatusCode.BadRequest) { call, status ->
-                call.respondText("Błędne dane", status = status)
+                call.respondText("Osoba o podanym e-mailu lub nazwie już istnieje spróbuj się zalogować ", status = status)
             }
             status(HttpStatusCode.InternalServerError) { call, status ->
                 call.respondText("Błąd serwera", status = status)
