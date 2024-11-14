@@ -9,5 +9,6 @@ class UploadedFile(id: EntityID<Long>) : LongEntity(id) {
 
     var fileName by UploadedFilesTable.fileName
     var filePath by UploadedFilesTable.filePath
+    var filePrice by UploadedFilesTable.filePrice
 }
 

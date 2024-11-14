@@ -109,3 +109,23 @@ fun Route.viewFileRoute() {
 
 
 }
+
+fun Route.listFilesRoute() {
+    get("/api/files") {
+        call.application.log.info("Otrzymano żądanie do /api/files")
+        val files = transaction {
+            UploadedFile.all().map { file ->
+                mapOf(
+                    "id" to file.id.value,
+                    "name" to file.fileName,
+                    "path" to file.filePath,
+                    "price" to file.filePrice // Dodanie pola file_price
+                )
+            }
+        }
+        call.application.log.info("Zwracanie plików: ${files.size} elementów")
+        call.respond(files)
+    }
+}
+
+
