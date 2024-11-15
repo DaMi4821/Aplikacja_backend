@@ -6,7 +6,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.http.*
-import io.ktor.http.content.*
 import com.example.service.FileService
 import java.io.File
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -26,11 +25,19 @@ fun Route.addFileRoute() {
                 call.application.log.error("Brak ścieżki pliku")
                 return@post call.respond(HttpStatusCode.BadRequest, "Brak ścieżki pliku")
             }
+            val filePrice = requestData["filePrice"] ?: run {
+                call.application.log.error("Brak ceny pliku")
+                return@post call.respond(HttpStatusCode.BadRequest, "Brak ceny pliku")
+            }
+            val categoryId = requestData["categoryId"]?.toIntOrNull() ?: run {
+                call.application.log.error("Brak ID kategorii")
+                return@post call.respond(HttpStatusCode.BadRequest, "Brak ID kategorii")
+            }
 
-            call.application.log.info("Dodawanie pliku: fileName=$fileName, filePath=$filePath")
+            call.application.log.info("Dodawanie pliku: fileName=$fileName, filePath=$filePath, filePrice=$filePrice, categoryId=$categoryId")
 
-            // Próbuj zapisać dane do bazy danych
-            FileService.saveFile(fileName, filePath)
+            // Zapis do bazy danych
+            FileService.saveFile(fileName, filePath, filePrice, categoryId)
 
             call.respond(HttpStatusCode.Created, "Plik został dodany do bazy danych.")
         } catch (e: Exception) {
@@ -38,39 +45,42 @@ fun Route.addFileRoute() {
             call.respond(HttpStatusCode.BadRequest, "Błędne dane: ${e.message}")
         }
     }
-
 }
 
+fun Route.listFilesRoute() {
+    get("/api/files/{categoryId?}") {
+        val categoryId = call.parameters["categoryId"]?.toIntOrNull()
 
+        call.application.log.info("Otrzymano żądanie do /api/files z kategorią: $categoryId")
 
-fun Route.getFileRoute() {
-    get("/api/files/{fileName}") {
-        val fileName = call.parameters["fileName"]
-        if (fileName == null) {
-            call.respond(HttpStatusCode.BadRequest, "Brak nazwy pliku")
-            return@get
+        val files = transaction {
+            if (categoryId != null) {
+                UploadedFile.find { UploadedFilesTable.categoryId eq categoryId }
+                    .map { file ->
+                        mapOf(
+                            "id" to file.id.value,
+                            "name" to file.fileName,
+                            "path" to file.filePath,
+                            "price" to file.filePrice // Pole filePrice
+                        )
+                    }
+            } else {
+                UploadedFile.all().map { file ->
+                    mapOf(
+                        "id" to file.id.value,
+                        "name" to file.fileName,
+                        "path" to file.filePath,
+                        "price" to file.filePrice // Pole filePrice
+                    )
+                }
+            }
         }
 
-        // Pobierz ścieżkę pliku z bazy danych na podstawie nazwy pliku
-        val filePath = transaction {
-            UploadedFile.find { UploadedFilesTable.fileName eq fileName }
-                .firstOrNull()?.filePath
-        }
-
-        if (filePath == null) {
-            call.respond(HttpStatusCode.NotFound, "Plik nie został znaleziony w bazie danych")
-            return@get
-        }
-
-        val file = File(filePath)
-
-        if (file.exists()) {
-            call.respondFile(file)
-        } else {
-            call.respond(HttpStatusCode.NotFound, "Plik nie istnieje na serwerze")
-        }
+        call.application.log.info("Zwracanie plików: ${files.size} elementów")
+        call.respond(files)
     }
 }
+
 
 fun Route.viewFileRoute() {
     get("/api/view-file/{id}") {
@@ -83,7 +93,6 @@ fun Route.viewFileRoute() {
 
         call.application.log.info("Otrzymano ID pliku: $fileId")
 
-        // Pobierz ścieżkę pliku z bazy danych na podstawie ID
         val filePath = transaction {
             UploadedFile.findById(fileId)?.filePath
         }
@@ -94,8 +103,6 @@ fun Route.viewFileRoute() {
             return@get
         }
 
-        call.application.log.info("Ścieżka pliku: $filePath")
-
         val file = File(filePath)
 
         if (file.exists()) {
@@ -105,26 +112,6 @@ fun Route.viewFileRoute() {
             call.application.log.error("Plik o ścieżce $filePath nie istnieje na serwerze")
             call.respond(HttpStatusCode.NotFound, "Plik nie istnieje na serwerze")
         }
-    }
-
-
-}
-
-fun Route.listFilesRoute() {
-    get("/api/files") {
-        call.application.log.info("Otrzymano żądanie do /api/files")
-        val files = transaction {
-            UploadedFile.all().map { file ->
-                mapOf(
-                    "id" to file.id.value,
-                    "name" to file.fileName,
-                    "path" to file.filePath,
-                    "price" to file.filePrice // Dodanie pola file_price
-                )
-            }
-        }
-        call.application.log.info("Zwracanie plików: ${files.size} elementów")
-        call.respond(files)
     }
 }
 

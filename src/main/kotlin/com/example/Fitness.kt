@@ -48,7 +48,7 @@ fun main() {
 
         routing {
             addFileRoute()
-            getFileRoute()
+
             viewFileRoute()
             listFilesRoute()
             // Endpoint rejestracyjny

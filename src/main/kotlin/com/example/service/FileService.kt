@@ -4,7 +4,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import com.example.repository.UploadedFile
 
 object FileService {
-    fun saveFile(fileName: String, filePath: String) {
+    fun saveFile(fileName: String, filePath: String, filePrice: String, categoryId: Int) {
         try {
             transaction {
                 UploadedFile.new {
