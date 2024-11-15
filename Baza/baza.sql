@@ -1,4 +1,4 @@
-select * from uploaded_files
+select * from uploaded_files;
 
 CREATE TABLE uploaded_files (
     id SERIAL PRIMARY KEY,
