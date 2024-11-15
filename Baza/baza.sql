@@ -16,7 +16,7 @@ INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUE
 INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('6.jpg', 'Obrazy/suplementy/6.jpg', '26.49 zł', 1);
 INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('7.jpg', 'Obrazy/suplementy/7.jpg', '96.49 zł', 1);
 INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('8.jpg', 'Obrazy/suplementy/8.jpg', '73.49 zł', 1);
-INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('9.jpg', 'Obrazy/suplementy/7.jpg', '23.49 zł', 1);
-INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('10.jpg', 'Obrazy/suplementy/8.jpg', '85.49 zł', 1);
+INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('9.jpg', 'Obrazy/suplementy/9.jpg', '23.49 zł', 1);
+INSERT INTO uploaded_files (file_name, file_path, file_price, category_id) VALUES ('10.jpg', 'Obrazy/suplementy/10.jpg', '85.49 zł', 1);
 
 DROP TABLE IF EXISTS uploaded_files;
