@@ -81,9 +81,43 @@ fun Route.listFilesRoute() {
     }
 }
 
+fun Route.listFilesRouteZywnosc() {
+    get("/api/files/food/{categoryId?}") {
+        val categoryId = call.parameters["categoryId"]?.toIntOrNull()
+
+        call.application.log.info("Otrzymano żądanie do /api/files z kategorią: $categoryId")
+
+        val files = transaction {
+            if (categoryId != null) {
+                UploadedFileFood.find { UploadedFilesFoodTable.categoryId eq categoryId }
+                    .map { file ->
+                        mapOf(
+                            "id" to file.id.value,
+                            "name" to file.fileName,
+                            "path" to file.filePath,
+                            "price" to file.filePrice // Pole filePrice
+                        )
+                    }
+            } else {
+                UploadedFileFood.all().map { file ->
+                    mapOf(
+                        "id" to file.id.value,
+                        "name" to file.fileName,
+                        "path" to file.filePath,
+                        "price" to file.filePrice // Pole filePrice
+                    )
+                }
+            }
+        }
+
+        call.application.log.info("Zwracanie plików: ${files.size} elementów")
+        call.respond(files)
+    }
+}
+
 
 fun Route.viewFileRoute() {
-    get("/api/view-file/{id}") {
+    get("/api/view-file/supplements/{id}") {
         val fileId = call.parameters["id"]?.toLongOrNull()
         if (fileId == null) {
             call.application.log.error("Nieprawidłowe ID pliku: ${call.parameters["id"]}")
@@ -114,5 +148,108 @@ fun Route.viewFileRoute() {
         }
     }
 }
+
+fun Route.viewFileRouteEquipment() {
+    get("/api/view-file/equipment/{id}") {
+        val fileId = call.parameters["id"]?.toLongOrNull()
+        if (fileId == null) {
+            call.application.log.error("Nieprawidłowe ID pliku: ${call.parameters["id"]}")
+            call.respond(HttpStatusCode.BadRequest, "Nieprawidłowe ID pliku")
+            return@get
+        }
+
+        call.application.log.info("Otrzymano ID pliku: $fileId")
+
+        val filePath = transaction {
+            UploadedFileEquipment.findById(fileId)?.filePath
+        }
+
+        if (filePath == null) {
+            call.application.log.error("Plik o ID $fileId nie został znaleziony w bazie danych")
+            call.respond(HttpStatusCode.NotFound, "Plik nie został znaleziony w bazie danych")
+            return@get
+        }
+
+        val file = File(filePath)
+
+        if (file.exists()) {
+            call.application.log.info("Plik o ID $fileId znaleziony na serwerze")
+            call.respondFile(file)
+        } else {
+            call.application.log.error("Plik o ścieżce $filePath nie istnieje na serwerze")
+            call.respond(HttpStatusCode.NotFound, "Plik nie istnieje na serwerze")
+        }
+    }
+}
+
+fun Route.listFilesRouteEquipment() {
+    get("/api/files/equipment/{categoryId?}") {
+        val categoryId = call.parameters["categoryId"]?.toIntOrNull()
+
+        call.application.log.info("Otrzymano żądanie do /api/files z kategorią: $categoryId")
+
+        val files = transaction {
+            if (categoryId != null) {
+                UploadedFileEquipment.find { UploadedFilesEquipmentTable.categoryId eq categoryId }
+                    .map { file ->
+                        mapOf(
+                            "id" to file.id.value,
+                            "name" to file.fileName,
+                            "path" to file.filePath,
+                            "price" to file.filePrice // Pole filePrice
+                        )
+                    }
+            } else {
+                UploadedFileEquipment.all().map { file ->
+                    mapOf(
+                        "id" to file.id.value,
+                        "name" to file.fileName,
+                        "path" to file.filePath,
+                        "price" to file.filePrice // Pole filePrice
+                    )
+                }
+            }
+        }
+
+        call.application.log.info("Zwracanie plików: ${files.size} elementów")
+        call.respond(files)
+    }
+}
+
+fun Route.viewFileRouteZywnosc() {
+    get("/api/view-file/food/{id}") {
+        val fileId = call.parameters["id"]?.toLongOrNull()
+        if (fileId == null) {
+            call.application.log.error("Nieprawidłowe ID pliku: ${call.parameters["id"]}")
+            call.respond(HttpStatusCode.BadRequest, "Nieprawidłowe ID pliku")
+            return@get
+        }
+
+        call.application.log.info("Otrzymano ID pliku: $fileId")
+
+        val filePath = transaction {
+            UploadedFileFood.findById(fileId)?.filePath
+        }
+
+        if (filePath == null) {
+            call.application.log.error("Plik o ID $fileId nie został znaleziony w bazie danych")
+            call.respond(HttpStatusCode.NotFound, "Plik nie został znaleziony w bazie danych")
+            return@get
+        }
+
+        val file = File(filePath)
+
+        if (file.exists()) {
+            call.application.log.info("Plik o ID $fileId znaleziony na serwerze")
+            call.respondFile(file)
+        } else {
+            call.application.log.error("Plik o ścieżce $filePath nie istnieje na serwerze")
+            call.respond(HttpStatusCode.NotFound, "Plik nie istnieje na serwerze")
+        }
+    }
+}
+
+
+
 
 

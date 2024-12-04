@@ -50,7 +50,12 @@ fun main() {
             addFileRoute()
 
             viewFileRoute()
+            viewFileRouteZywnosc()
+            viewFileRouteEquipment()
+
             listFilesRoute()
+            listFilesRouteZywnosc()
+            listFilesRouteEquipment()
             // Endpoint rejestracyjny
             post("/api/register") {
                 try {
