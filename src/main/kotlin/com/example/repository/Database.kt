@@ -5,6 +5,9 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
+import com.example.repository.UploadedFileKoszyk
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.initDatabase() {
     try {
@@ -20,6 +23,10 @@ fun Application.initDatabase() {
 
         val dataSource = HikariDataSource(hikariConfig)
         Database.connect(dataSource)
+
+        transaction {
+            SchemaUtils.create(Koszyk) // Add your table here
+        }
 
         log.info("Połączono z bazą danych PostgreSQL")
     } catch (e: Exception) {

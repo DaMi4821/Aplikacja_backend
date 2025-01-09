@@ -34,13 +34,17 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-cors:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5") // API biblioteki
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5") // Implementacja
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5") // Obsługa JSON (wymaga Jacksona)
     // Exposed ORM dependencies
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
     implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
-
+    implementation("org.simplejavamail:simple-java-mail:8.0.0") // Library for sending emails
+    implementation("com.sun.mail:javax.mail:1.6.2")
     // Database driver (PostgreSQL)
     implementation("org.postgresql:postgresql:42.7.2")
 

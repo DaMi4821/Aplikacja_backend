@@ -26,6 +26,7 @@ fun main() {
         install(CORS) {
             allowHost("localhost:3000") // Zezwala na połączenia z frontendu działającego na porcie 3000
             allowMethod(HttpMethod.Options) // Zezwala na zapytania wstępne OPTIONS
+            allowMethod(HttpMethod.Delete)
             allowMethod(HttpMethod.Post) // Zezwala na metodę POST
             allowMethod(HttpMethod.Get) // Zezwala na metodę GET
             allowHeader(HttpHeaders.ContentType) // Zezwala na nagłówek Content-Type
@@ -48,14 +49,20 @@ fun main() {
 
         routing {
             addFileRoute()
-
+            deleteItemFromCartRoute()
+            updateItemQuantityKoszyk()
+            saveBillingDataRoute()
+            aggregateAndTruncateRoute()
             viewFileRoute()
             viewFileRouteZywnosc()
             viewFileRouteEquipment()
-
+            postKoszyk()
             listFilesRoute()
             listFilesRouteZywnosc()
             listFilesRouteEquipment()
+            viewFileRouteKoszyk()
+            sendBillingDataEmailRoute()
+
             // Endpoint rejestracyjny
             post("/api/register") {
                 try {
